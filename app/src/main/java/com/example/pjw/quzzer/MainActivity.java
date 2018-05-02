@@ -307,7 +307,7 @@ public class MainActivity extends AppCompatActivity {
             }
             //루프에서 빠져나오면 스레드 종료를 위해 소켓 객체와 스트림 객체를 닫는다.
             try{
-                
+
             }
         }
 
