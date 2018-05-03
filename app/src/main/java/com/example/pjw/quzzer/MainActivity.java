@@ -152,7 +152,7 @@ public class MainActivity extends AppCompatActivity {
         };
 
         //연결버튼 누를 때 실행
-        connect.setOnClickListener(new OnClickListener(){
+        connect.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View V){
                 ip = eip.getText().toString();
@@ -176,7 +176,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        finish.setOnClickListener(new OnClickListener(){
+        finish.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View V){
                 if (client !=null){
@@ -188,7 +188,7 @@ public class MainActivity extends AppCompatActivity {
 
         //데이터를 서버에 전송
 
-        start.setOnClickListener(new OnClickListener() {
+        start.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View V) {
                 if (et.getText().toString() != null){
@@ -307,7 +307,51 @@ public class MainActivity extends AppCompatActivity {
             }
             //루프에서 빠져나오면 스레드 종료를 위해 소켓 객체와 스트림 객체를 닫는다.
             try{
+                if (networkWriter != null){
+                    networkWriter.close();
+                    networkWriter = null;
+                }
+                if (networkReader != null){
+                    networkReader.close();
+                    networkReader = null;
+                }
+                if (socket != null){
+                    socket.close();
+                    socket = null;
+                }
+                client = null;
 
+                //서버로 부터 FIN패킷을 받았는지 아니면 사용자가 종료 버튼을 눌렀는지 여부를 loop 변수로 판단한다.
+                if (loop){
+                    //loop 가 true 라면 서버에 의한 종료로 간주한다
+                    loop = false;
+                    Message toMain = mMainHandler.obtainMessage();
+                    toMain.what = MSG_SERVER_STOP;
+                    toMain.obj = "네트워크가 끊어졌습니다.";
+                    mMainHandler.sendMessage(toMain);
+                }
+            }catch (IOException e){
+                Log.d(TAG, "에러발생", e);
+                Message toMain = mMainHandler.obtainMessage();
+                toMain.what = MSG_ERROR;
+                toMain.obj = "소켓을 닫지 못했습니다..";
+                mMainHandler.sendMessage(toMain);
+            }
+        }
+
+        public void quit() {
+            loop = false;
+            try{
+                if (socket != null){
+                    socket.close();
+                    socket = null;
+                    Message toMain = mMainHandler.obtainMessage();
+                    toMain.what = MSG_CLIENT_STOP;
+                    toMain.obj = "접속을 중단합니다.";
+                    mMainHandler.sendMessage(toMain);
+                }// 서버에서 정상적으로 닫을 때까지 대기한다.
+            }catch (IOException e){
+                Log.d(TAG, "에러발생", e);
             }
         }
 
