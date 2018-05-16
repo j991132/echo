@@ -1,5 +1,6 @@
 package com.example.pjw.quzzer;
 
+import android.content.Intent;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
@@ -48,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
 
     private String ip;
     private int port = 6000;
-    private String TAG = "TcpClientActivity";
+    private String TAG = "MainActivity";
 
     //핸들러가 수행하는 기능은 아래 상수에 의해 결정
     public static final int MSG_CONNECT=1;
@@ -80,6 +81,7 @@ public class MainActivity extends AppCompatActivity {
         final EditText eip= (EditText) findViewById(R.id.editText1);
         final EditText eport= (EditText) findViewById(R.id.editText2);
         final EditText et= (EditText) findViewById(R.id.editText3);
+        final EditText ename= (EditText) findViewById(R.id.editText4);
 
         connect = (Button)findViewById(R.id.button1);
         finish =  (Button)findViewById(R.id.button2);
@@ -168,6 +170,26 @@ public class MainActivity extends AppCompatActivity {
                         //스레드 생성하고 서버IP 주소와 포트번호 넘겨주기
                         client = new TCPClient(ip, port);
                         client.start();
+                        Log.d(TAG, "통신스레드시작");
+
+                        if (connect) {
+
+                                Log.d(TAG, "소켓시작");
+                                Intent intent = new Intent(MainActivity.this, subActivity.class);
+                                intent.putExtra("name", ename.getText().toString());
+                                startActivity(intent);
+                                Log.d(TAG, "액티비티 2시작");
+
+                                //핸들러로부터 메시지 하나 반환받는다(new로 생성하는 것이 아닌 핸들러에 있는 msg 가져오기)
+                                Message msg = mServiceHandler.obtainMessage();
+                                msg.what = MSG_START;
+                                msg.obj = ename.getText().toString();
+                                Log.d(TAG, "서버전달시작");
+                                //핸들러스레드를 통해 문자를 서버에 전달
+                                mServiceHandler.sendMessage(msg);
+                                Log.d(TAG, "서버전달 완료");
+
+                        }
                     }catch (RuntimeException e){
                         text.setText("IP주소나 포트번호가 잘못되었습니다..");
                         Log.d(TAG, "에러발생", e);
