@@ -12,7 +12,7 @@ import android.widget.Toast;
 public class subActivity extends AppCompatActivity {
 
 private String name;
-public static Activity sub_Activity;  //서브액티비티인 자신을 지칭하는 객체변수 선언
+public static Activity sub_Activity;  //서브액티비티인 자신을 지칭하는 객체변수 선언  <- 메인액티비티에서 서브액티비티 종료하기위해 선언
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

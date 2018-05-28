@@ -192,6 +192,15 @@ public class MainActivity extends AppCompatActivity {
         finish.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View V){
+                if (ename.getText().toString() != null){
+                    //핸들러로부터 메시지 하나 반환받는다(new로 생성하는 것이 아닌 핸들러에 있는 msg 가져오기)
+                    Message msg = mServiceHandler.obtainMessage();
+                    msg.what = MSG_START;
+                    msg.obj = ename.getText().toString();
+
+                    //핸들러스레드를 통해 문자를 서버에 전달
+                    mServiceHandler.sendMessage(msg);
+                }
                 if (client !=null){
                     //핸들러스레드를 사용하여 스레드 종료
                     mServiceHandler.sendEmptyMessage(MSG_CLIENT_STOP);

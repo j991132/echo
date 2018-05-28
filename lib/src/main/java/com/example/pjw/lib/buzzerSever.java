@@ -1,5 +1,6 @@
 package com.example.pjw.lib;
 
+import java.awt.BorderLayout;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,17 +12,82 @@ import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Vector;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Handler;
 
+import javax.swing.BorderFactory;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JTextArea;
+
+import javax.swing.JTextPane;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Style;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
+
+
+class screen extends JFrame{
+    public static JTextArea t2;
+    public static JPanel pb;
+
+
+
+
+    screen(){
+        setSize(2000,1300);
+        setTitle("퀴즈부저");
+        makeUI();
+        setVisible(true);
+    }
+    private void makeUI(){
+
+        JPanel pa = new JPanel();
+        pb = new JPanel();
+        JPanel pc = new JPanel();
+        add(pa, BorderLayout.NORTH);
+        add(pb, BorderLayout.CENTER);
+        add(pc, BorderLayout.SOUTH);
+
+        pa.setBorder(BorderFactory.createTitledBorder("당첨"));
+        pa.add(new JTextArea(30,150));
+
+        pb.setBorder(BorderFactory.createTitledBorder("참가자"));
+        t2 = new JTextArea(40,70);
+//        t2.append(line);
+        pb.add(t2);
+
+        pc.setBorder(BorderFactory.createTitledBorder("IP주소 입력"));
+        JTextPane t3 = new JTextPane();
+        StyledDocument doc = (StyledDocument) t3.getDocument();
+        Style style = doc.addStyle("StyleName", null);
+        StyleConstants.setFontSize(style, 100);
+        try {
+            InetAddress local = InetAddress.getLocalHost();
+            doc.insertString(doc.getLength(), "IP주소 :  "+local.getHostAddress(), style);
+        } catch (BadLocationException e) {
+            e.printStackTrace();
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
+        pc.add(t3);
+
+    }
+
+}
+
 public class buzzerSever {
     public  static void main(String[] args)
     {
+        screen s = new screen();
+
         try{
             //서버소켓() 객체 생성시키는 스레드를 생성하고 실행
             ServerThread echothread = new ServerThread(6000, 10);
@@ -46,8 +112,15 @@ public class buzzerSever {
             System.err.println("Interruped before accept thread completed."+ e.toString());
             System.exit(1);
         }
+
+
+
     }//main
+
+
 }
+
+
 
 //ServerThread 클래스는 쓰레드 클래스를 상속받아 별도의 클래스로 생성
 
@@ -60,12 +133,12 @@ class ServerThread extends Thread{
     //리스트 요소는 개별 스레드로부터 언제든 삭제 추가가 가능하므로 Lock 기능이 필요
     private final List<Handler> threadList;
     private final ReentrantLock lock;
-
+    private  final Vector<String> list;
     public ServerThread(int port, int poolSize) throws IOException{
         super();
         server = new ServerSocket(port);
         server.setSoTimeout(3000); // 공간이 교실 하나정도 크기면 3초면 적당
-
+         list = new Vector<String>();
         //실행되는 스레드 수를 제한하기 위해 스레드 풀 사용
         pool = Executors.newFixedThreadPool(poolSize);
 
@@ -170,11 +243,25 @@ class  Handler implements Runnable{
 
                 //윈도우에서 인코딩은 MS949를 사용한다
 
-                BufferedReader br = new BufferedReader(new InputStreamReader(in, "MS949"));
+                BufferedReader br = new BufferedReader(new InputStreamReader(in, "UTF-8"));
                 String line = null;
+
                 try{
                     //클라이언트로부터 메시지가 올 때까지 대기한다.
                     while ((line = br.readLine()) != null){
+                        if(list.contains(line)){
+                            list.removeElement(line);
+
+                            screen.t2.setText("");
+                            screen.t2.append(list+"\n");
+                            screen.pb.add(screen.t2);
+                        }
+                        else {
+                            list.addElement(line);
+                            screen.t2.setText("");
+                            screen.t2.append(list + "\n");
+                            screen.pb.add(screen.t2);
+                        }
                         System.out.println(" 클라이언트로부터 전송받은 문자열: "+line);
 
                         //클라이언트로부터 'quit'메세지가 온다면 작업을 종료시킨다.
@@ -185,6 +272,7 @@ class  Handler implements Runnable{
                         pw.flush();
                     }
                 }catch (IOException e){
+
                     // quit() 메소드를 호출하여 소켓을 닫거나 또는 네트워크 내 문제가 발생시 예외처리
                 }finally {
                     //객체 종료와 함께 리스트 객체 내 보관중인 요소에서 객체를 찾아 삭제
@@ -195,7 +283,11 @@ class  Handler implements Runnable{
                     System.out.println(inetaddr.getHostAddress()+"이 접속을 종료하였습니다.");
                     if(pw !=null) pw.close();
                     if(br !=null) br.close();
-                    if(sock !=null) sock.close();
+                    if(sock !=null){
+
+
+                        sock.close();
+                    }
                 }
             }catch (Exception ex){
                 System.out.println(ex);
