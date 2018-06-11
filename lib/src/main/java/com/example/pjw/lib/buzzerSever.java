@@ -15,18 +15,18 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.Vector;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.logging.Handler;
-
 import javax.swing.BorderFactory;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
-
 import javax.swing.JTextPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Style;
@@ -34,9 +34,25 @@ import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
 
+
+class MyDialog extends JDialog{
+    JTextPane firstpush = new JTextPane();
+
+    public MyDialog(JFrame frame, String title){
+        super(frame, title);
+        setLayout(null);
+        add(firstpush);
+        setSize(2000,1000);
+
+
+    }
+}
+
+
 class screen extends JFrame{
-    public static JTextArea t2;
-    public static JPanel pb;
+    public static JTextArea t1, t2;
+    public static JPanel pa, pb;
+
 
 
 
@@ -46,18 +62,45 @@ class screen extends JFrame{
         setTitle("퀴즈부저");
         makeUI();
         setVisible(true);
+       // dialogTimer();
     }
+
+
+    public static JTextArea first;
+     static Timer timer;
+     static MyDialog dialog;
+
+
+     public static void dialogTimer(){
+        first = new JTextArea();
+        JFrame dt = new JFrame();
+        dialog = new MyDialog( dt , "1등은 바로");
+        dialog.setVisible(true);
+        dialog.firstpush.add(first);
+
+        timer = new Timer();
+        timer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                dialog.setVisible(false);
+            }
+        }, 2000, 1000);
+        //timer.cancel();
+    }
+
     private void makeUI(){
 
-        JPanel pa = new JPanel();
+        pa = new JPanel();
         pb = new JPanel();
         JPanel pc = new JPanel();
+
         add(pa, BorderLayout.NORTH);
         add(pb, BorderLayout.CENTER);
         add(pc, BorderLayout.SOUTH);
 
         pa.setBorder(BorderFactory.createTitledBorder("당첨"));
-        pa.add(new JTextArea(30,150));
+        t1 = new JTextArea(30,150);
+        pa.add(t1);
 
         pb.setBorder(BorderFactory.createTitledBorder("참가자"));
         t2 = new JTextArea(40,70);
@@ -84,9 +127,12 @@ class screen extends JFrame{
 }
 
 public class buzzerSever {
+
+
     public  static void main(String[] args)
     {
         screen s = new screen();
+
 
         try{
             //서버소켓() 객체 생성시키는 스레드를 생성하고 실행
@@ -147,6 +193,9 @@ class ServerThread extends Thread{
         threadList = new ArrayList<Handler>();
         lock = new ReentrantLock();
         loop = true;
+
+
+
     }// 생성자
 
     @Override
@@ -210,6 +259,8 @@ class ServerThread extends Thread{
             lock.unlock();
         }
     }
+
+
     // Handler 내부 클래스
 class  Handler implements Runnable{
     private Socket sock;
@@ -234,6 +285,7 @@ class  Handler implements Runnable{
             @Override
         public void run(){
             try{
+
                 InetAddress inetaddr = sock.getInetAddress();
                 System.out.println(inetaddr.getHostAddress() + "이 접속하였습니다.");
 
@@ -249,20 +301,41 @@ class  Handler implements Runnable{
                 try{
                     //클라이언트로부터 메시지가 올 때까지 대기한다.
                     while ((line = br.readLine()) != null){
+
+
+
                         if(list.contains(line)){
                             list.removeElement(line);
 
                             screen.t2.setText("");
                             screen.t2.append(list+"\n");
                             screen.pb.add(screen.t2);
+
+
+                            screen.dialogTimer();
                         }
+
                         else {
                             list.addElement(line);
-                            screen.t2.setText("");
-                            screen.t2.append(list + "\n");
-                            screen.pb.add(screen.t2);
+
+                          /*  if(list.contains(line+confime)){
+
+                                screen.first.setText(line);
+                                screen.t1.append(line);
+                                screen.pa.add(screen.t1);
+                                System.out.println("받은메세지"+line);
+                               // s.dialogTimer();
+
+                            }
+*/
+
+                                screen.t2.setText("");
+                                screen.t2.append(list + "\n");
+                                screen.pb.add(screen.t2);
+
                         }
                         System.out.println(" 클라이언트로부터 전송받은 문자열: "+line);
+
 
                         //클라이언트로부터 'quit'메세지가 온다면 작업을 종료시킨다.
                         //소켓을 닫는다면 readLine() 메소드에서 IOException 예외가 발생한다.

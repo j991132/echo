@@ -2,6 +2,7 @@ package com.example.pjw.quzzer;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -27,7 +28,13 @@ public static Activity sub_Activity;  //서브액티비티인 자신을 지칭�
         ibtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+               // MainActivity MA = (MainActivity)MainActivity.Main_Activity;
+               // Message msg = mServiceHandler.obtainMessage();
+              //  msg.what = MSG_START;
+              //  msg.obj = name;
 
+                //핸들러스레드를 통해 문자를 서버에 전달
+             //  mServiceHandler.sendMessage(msg);
                 Toast.makeText(getApplicationContext(), "버튼 눌림" + name, Toast.LENGTH_SHORT).show();
             }
         });

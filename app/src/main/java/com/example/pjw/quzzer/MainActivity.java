@@ -1,6 +1,10 @@
 package com.example.pjw.quzzer;
 
+import android.app.Activity;
+import android.app.Dialog;
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.Point;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
@@ -9,9 +13,12 @@ import android.os.SystemClock;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Display;
 import android.view.View;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -26,7 +33,8 @@ import java.net.Socket;
 import java.net.SocketAddress;
 
 public class MainActivity extends AppCompatActivity {
-
+    public static Activity Main_Activity;
+    Context context;
     //일반 스레드로 실행되는 작업의 결과를 화면에 출력시키기 위해 메인 핸들러 사용
     private Handler mMainHandler;
 
@@ -84,12 +92,12 @@ public class MainActivity extends AppCompatActivity {
         final EditText et= (EditText) findViewById(R.id.editText3);
         final EditText ename= (EditText) findViewById(R.id.editText4);
 
-
+        Main_Activity = MainActivity.this;
         connect = (Button)findViewById(R.id.button1);
         finish =  (Button)findViewById(R.id.button2);
         start = (Button)findViewById(R.id.button3);
         text = (TextView)findViewById(R.id.textView1);
-
+        context = this;
         connect.setEnabled(true);
         finish.setEnabled(false);
         start.setEnabled(false);
@@ -118,6 +126,36 @@ public class MainActivity extends AppCompatActivity {
                         finish.setEnabled(true);
                         start.setEnabled(true);
                         text.setText(m);
+
+                        //다이얼로그 생성
+                        Dialog buzzer = new Dialog(MainActivity.this);
+                        buzzer.setContentView(R.layout.buzzerdialog);
+                        ImageButton buzzerbtn = (ImageButton)buzzer.findViewById(R.id.buzzerbtn);
+
+                            buzzerbtn.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    Message msg = mServiceHandler.obtainMessage();
+                                    msg.what = MSG_START;
+                                    msg.obj = name;
+
+                                    //핸들러스레드를 통해 문자를 서버에 전달
+                                     mServiceHandler.sendMessage(msg);
+
+                                    Toast.makeText(getApplicationContext(), "버튼 눌림" + name, Toast.LENGTH_SHORT).show();
+                                }
+                            });
+
+                        buzzer.show();
+//다이얼로그 크기 변경
+                        Display display = getWindowManager().getDefaultDisplay();  //디스클레이 해상도가져오기
+                        Point size = new Point();
+                        display.getSize(size);
+                        Window window = buzzer.getWindow();  //비율에 맞게 다이얼로그 크기 지정
+                        int x = (int)(size.x*0.99f);  //가로길이의 99%로 늘리기
+                        int y = (int)(size.y*0.99f);
+                        window.setLayout(x,y);
+
                         break;
 
                     case MSG_CLIENT_STOP:
@@ -138,8 +176,9 @@ public class MainActivity extends AppCompatActivity {
                         m="서버가 접속을 종료하였습니다.";
 
                         //서브액티비티를 지칭하는 객체생성후 종료
-                        subActivity SA = (subActivity)subActivity.sub_Activity;
-                        SA.finish();
+                       // subActivity SA = (subActivity)subActivity.sub_Activity;
+                       // SA.finish();
+
                         break;
 
                     case MSG_START:
@@ -163,6 +202,8 @@ public class MainActivity extends AppCompatActivity {
         connect.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View V){
+
+
                 ip = eip.getText().toString();
                 try{
                     //포트번호는 양수여야 함
@@ -224,6 +265,8 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+
+
 
     }
 
@@ -293,10 +336,15 @@ public class MainActivity extends AppCompatActivity {
                 toMain.what = MSG_CONNECT;
                 mMainHandler.sendMessage(toMain);
 
-                Intent intent = new Intent(MainActivity.this, subActivity.class);
-                intent.putExtra("name", name);
-                startActivity(intent);
+
+
+
+
+              //  Intent intent = new Intent(MainActivity.this, subActivity.class);
+              //  intent.putExtra("name", name);
+             //   startActivity(intent);
                 Log.d(TAG, "액티비티 2시작");
+
 
                 //핸들러로부터 메시지 하나 반환받는다(new로 생성하는 것이 아닌 핸들러에 있는 msg 가져오기)
                 Message msg = mServiceHandler.obtainMessage();
