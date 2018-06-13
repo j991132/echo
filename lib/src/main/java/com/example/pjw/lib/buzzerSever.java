@@ -89,6 +89,7 @@ class screen extends JFrame{
             @Override
             public void run() {
                 dialog.setVisible(false);
+                ServerThread.firstlist.clear();
             }
         }, 3000, 10000);
 
@@ -187,6 +188,7 @@ class ServerThread extends Thread{
     private final List<Handler> threadList;
     private final ReentrantLock lock;
     private  final Vector<String> list;
+    public  static List<String> firstlist;
     public ServerThread(int port, int poolSize) throws IOException{
         super();
         server = new ServerSocket(port);
@@ -200,7 +202,7 @@ class ServerThread extends Thread{
         threadList = new ArrayList<Handler>();
         lock = new ReentrantLock();
         loop = true;
-
+        firstlist = new ArrayList<String>();
 
 
     }// 생성자
@@ -306,14 +308,25 @@ class  Handler implements Runnable{
                 String line = null;
 
                 try{
+
                     //클라이언트로부터 메시지가 올 때까지 대기한다.
                     while ((line = br.readLine()) != null){
 
                         if(line.contains("!!")){
 
-                            screen.dialogTimer(line.replace("!!",""));
 
-                        }else {
+                            firstlist.add(line);
+
+                            if(line == firstlist.get(0)) {
+
+                                screen.dialogTimer(firstlist.get(0).replace("!!",""));
+                            }else{}
+
+                            //screen.dialogTimer(line.replace("!!",""));
+
+                        }
+
+                        else {
 
                             if (list.contains(line)) {
                                 list.removeElement(line);
@@ -343,6 +356,7 @@ class  Handler implements Runnable{
 
                             }
                         }
+
                         System.out.println(" 클라이언트로부터 전송받은 문자열: "+line);
 
 
