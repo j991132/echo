@@ -33,6 +33,7 @@ import java.net.Socket;
 import java.net.SocketAddress;
 
 public class MainActivity extends AppCompatActivity {
+    Dialog buzzer;
     public static Activity Main_Activity;
     Context context;
     //일반 스레드로 실행되는 작업의 결과를 화면에 출력시키기 위해 메인 핸들러 사용
@@ -92,6 +93,7 @@ public class MainActivity extends AppCompatActivity {
         final EditText et= (EditText) findViewById(R.id.editText3);
         final EditText ename= (EditText) findViewById(R.id.editText4);
 
+
         Main_Activity = MainActivity.this;
         connect = (Button)findViewById(R.id.button1);
         finish =  (Button)findViewById(R.id.button2);
@@ -128,7 +130,7 @@ public class MainActivity extends AppCompatActivity {
                         text.setText(m);
 
                         //다이얼로그 생성
-                        Dialog buzzer = new Dialog(MainActivity.this);
+                        buzzer = new Dialog(MainActivity.this);
                         buzzer.setContentView(R.layout.buzzerdialog);
                         ImageButton buzzerbtn = (ImageButton)buzzer.findViewById(R.id.buzzerbtn);
 
@@ -137,12 +139,13 @@ public class MainActivity extends AppCompatActivity {
                                 public void onClick(View v) {
                                     Message msg = mServiceHandler.obtainMessage();
                                     msg.what = MSG_START;
-                                    msg.obj = name;
+                                    String name2 = name+"!!";
+                                    msg.obj = name2;
 
                                     //핸들러스레드를 통해 문자를 서버에 전달
                                      mServiceHandler.sendMessage(msg);
 
-                                    Toast.makeText(getApplicationContext(), "버튼 눌림" + name, Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(getApplicationContext(), "버튼 눌림" + name2, Toast.LENGTH_SHORT).show();
                                 }
                             });
 
@@ -178,7 +181,7 @@ public class MainActivity extends AppCompatActivity {
                         //서브액티비티를 지칭하는 객체생성후 종료
                        // subActivity SA = (subActivity)subActivity.sub_Activity;
                        // SA.finish();
-
+                        buzzer.dismiss();
                         break;
 
                     case MSG_START:

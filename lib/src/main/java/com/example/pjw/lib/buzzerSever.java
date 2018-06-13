@@ -36,12 +36,11 @@ import javax.swing.text.StyledDocument;
 
 
 class MyDialog extends JDialog{
-    JTextPane firstpush = new JTextPane();
 
     public MyDialog(JFrame frame, String title){
         super(frame, title);
-        setLayout(null);
-        add(firstpush);
+        //setLayout(null);
+
         setSize(2000,1000);
 
 
@@ -50,10 +49,10 @@ class MyDialog extends JDialog{
 
 
 class screen extends JFrame{
-    public static JTextArea t1, t2;
-    public static JPanel pa, pb;
+    public static JTextArea t1, t2, first;
+    public static JPanel pa, pb ;
 
-
+    public static JTextPane firstpush;
 
 
 
@@ -63,20 +62,27 @@ class screen extends JFrame{
         makeUI();
         setVisible(true);
        // dialogTimer();
+
     }
 
 
-    public static JTextArea first;
+   // public static JTextArea first;
      static Timer timer;
      static MyDialog dialog;
 
 
-     public static void dialogTimer(){
-        first = new JTextArea();
+     public static void dialogTimer(String string){
+         firstpush = new JTextPane();
+         first = new JTextArea();
+
         JFrame dt = new JFrame();
         dialog = new MyDialog( dt , "1등은 바로");
+         //firstpush.add(first);
+         firstpush.setText(string);
+         dialog.add(firstpush);
+
         dialog.setVisible(true);
-        dialog.firstpush.add(first);
+
 
         timer = new Timer();
         timer.scheduleAtFixedRate(new TimerTask() {
@@ -84,7 +90,8 @@ class screen extends JFrame{
             public void run() {
                 dialog.setVisible(false);
             }
-        }, 2000, 1000);
+        }, 3000, 10000);
+
         //timer.cancel();
     }
 
@@ -302,21 +309,22 @@ class  Handler implements Runnable{
                     //클라이언트로부터 메시지가 올 때까지 대기한다.
                     while ((line = br.readLine()) != null){
 
+                        if(line.contains("!!")){
+
+                            screen.dialogTimer(line.replace("!!",""));
+
+                        }else {
+
+                            if (list.contains(line)) {
+                                list.removeElement(line);
+
+                                screen.t2.setText("");
+                                screen.t2.append(list + "\n");
+                                screen.pb.add(screen.t2);
 
 
-                        if(list.contains(line)){
-                            list.removeElement(line);
-
-                            screen.t2.setText("");
-                            screen.t2.append(list+"\n");
-                            screen.pb.add(screen.t2);
-
-
-                            screen.dialogTimer();
-                        }
-
-                        else {
-                            list.addElement(line);
+                            } else {
+                                list.addElement(line);
 
                           /*  if(list.contains(line+confime)){
 
@@ -333,6 +341,7 @@ class  Handler implements Runnable{
                                 screen.t2.append(list + "\n");
                                 screen.pb.add(screen.t2);
 
+                            }
                         }
                         System.out.println(" 클라이언트로부터 전송받은 문자열: "+line);
 
