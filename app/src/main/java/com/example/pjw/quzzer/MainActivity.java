@@ -35,6 +35,7 @@ import java.net.SocketAddress;
 public class MainActivity extends AppCompatActivity {
     Dialog buzzer;
     public static Activity Main_Activity;
+    public static ImageButton buzzerbtn;
     Context context;
     //일반 스레드로 실행되는 작업의 결과를 화면에 출력시키기 위해 메인 핸들러 사용
     private Handler mMainHandler;
@@ -67,15 +68,37 @@ public class MainActivity extends AppCompatActivity {
     public static final int MSG_CLIENT_STOP=3;
     public static final int MSG_SERVER_STOP=4;
     public static final int MSG_START=5;
+    public static final int MSG_READY=6;
     public static final int MSG_ERROR=999;
 
     @Override
+    public void onStop(){
+        Message msg = mServiceHandler.obtainMessage();
+        msg.what = MSG_START;
+        String finishname = name + "finish";
+        msg.obj = finishname;
+
+        //핸들러스레드를 통해 문자를 서버에 전달
+        mServiceHandler.sendMessage(msg);
+
+        super.onStop();
+    }
+
+
+
+    @Override
     public void onDestroy(){
+
+
+
         //화면을 닫으면 소케과 스레드 모두 종료
         super.onDestroy();
         //소켓 객체를 닫는 close() 메소드는 일반 스레드로 실행해야함-메인스레드에서 실행시 오류-4웨이 핸드쉐이크 때문
         //따라서 핸들러 호출
         if (client != null){
+
+
+
             mServiceHandler.sendEmptyMessage(MSG_STOP);
         }
         //핸들러스레드 종료
@@ -132,19 +155,28 @@ public class MainActivity extends AppCompatActivity {
                         //다이얼로그 생성
                         buzzer = new Dialog(MainActivity.this);
                         buzzer.setContentView(R.layout.buzzerdialog);
-                        ImageButton buzzerbtn = (ImageButton)buzzer.findViewById(R.id.buzzerbtn);
+                          buzzerbtn = (ImageButton)buzzer.findViewById(R.id.buzzerbtn);
 
                             buzzerbtn.setOnClickListener(new View.OnClickListener() {
                                 @Override
                                 public void onClick(View v) {
                                     Message msg = mServiceHandler.obtainMessage();
                                     msg.what = MSG_START;
-                                    String name2 = name+"!!";
+                                    String name2 = name+"button";
                                     msg.obj = name2;
 
                                     //핸들러스레드를 통해 문자를 서버에 전달
                                      mServiceHandler.sendMessage(msg);
+                                    buzzerbtn.setEnabled(false);
+                                /*     try{
 
+                                         Thread.sleep(3000);
+                                         buzzerbtn.setEnabled(true);
+                                     }catch (InterruptedException e){
+                                         e.printStackTrace();
+                                     }
+
+*/
                                     Toast.makeText(getApplicationContext(), "버튼 눌림" + name2, Toast.LENGTH_SHORT).show();
                                 }
                             });
@@ -161,6 +193,12 @@ public class MainActivity extends AppCompatActivity {
 
                         break;
 
+                    case MSG_READY:
+                        //당첨 다이얼로그 사라졌을 때 메세지 수신
+                        buzzerbtn.setEnabled(true);
+                        m = "버튼 누를 준비 완료!";
+                        break;
+
                     case MSG_CLIENT_STOP:
                         //사용자가 연결 작업 종료시
                         text.setText((String) msg.obj);
@@ -168,6 +206,8 @@ public class MainActivity extends AppCompatActivity {
                         finish.setEnabled(false);
                         start.setEnabled(false);
                         m="클라이언트가 접속을 종료하였습니다.";
+
+
                         break;
 
                     case MSG_SERVER_STOP:
@@ -240,14 +280,18 @@ public class MainActivity extends AppCompatActivity {
                     //핸들러로부터 메시지 하나 반환받는다(new로 생성하는 것이 아닌 핸들러에 있는 msg 가져오기)
                     Message msg = mServiceHandler.obtainMessage();
                     msg.what = MSG_START;
-                    msg.obj = ename.getText().toString();
+                    String finishname = ename.getText().toString() + "finish";
+                    msg.obj = finishname;
 
                     //핸들러스레드를 통해 문자를 서버에 전달
                     mServiceHandler.sendMessage(msg);
                 }
                 if (client !=null){
+
+
                     //핸들러스레드를 사용하여 스레드 종료
                     mServiceHandler.sendEmptyMessage(MSG_CLIENT_STOP);
+
                 }
             }
         });
@@ -352,7 +396,8 @@ public class MainActivity extends AppCompatActivity {
                 //핸들러로부터 메시지 하나 반환받는다(new로 생성하는 것이 아닌 핸들러에 있는 msg 가져오기)
                 Message msg = mServiceHandler.obtainMessage();
                 msg.what = MSG_START;
-                msg.obj = name;
+                String connectname = name+"connect";
+                msg.obj = connectname;
                 Log.d(TAG, "서버전달시작");
                 //핸들러스레드를 통해 문자를 서버에 전달
                 mServiceHandler.sendMessage(msg);
@@ -374,8 +419,11 @@ public class MainActivity extends AppCompatActivity {
                     line = networkReader.readLine();
 
                     //서버로부터 FIN 패킷을 수신하면 read() 메소드는 null을 반환
-                    if (line == null)
-                        break;
+
+                        if(line.contains("delete")){
+                        mMainHandler.sendEmptyMessage(MSG_READY);
+                    }else if (line == null){
+                            break;}
 
                     //읽어들인 문자열은 화면 출력을 위해 Runnable 객체와 핸들러를 사용하였다.
                     //메시지를 사용하지 않은 이유는 단지 이렇게 하더라도 작동하는지 보여주기 위함
