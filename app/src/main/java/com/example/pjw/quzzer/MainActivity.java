@@ -160,6 +160,7 @@ public class MainActivity extends AppCompatActivity {
                             buzzerbtn.setOnClickListener(new View.OnClickListener() {
                                 @Override
                                 public void onClick(View v) {
+
                                     Message msg = mServiceHandler.obtainMessage();
                                     msg.what = MSG_START;
                                     String name2 = name+"button";
@@ -167,6 +168,7 @@ public class MainActivity extends AppCompatActivity {
 
                                     //핸들러스레드를 통해 문자를 서버에 전달
                                      mServiceHandler.sendMessage(msg);
+                                    Log.d(TAG, "부저 누를때 보내는 메세지  "+name2);
                                     buzzerbtn.setEnabled(false);
                                 /*     try{
 
@@ -419,7 +421,7 @@ public class MainActivity extends AppCompatActivity {
                     line = networkReader.readLine();
 
                     //서버로부터 FIN 패킷을 수신하면 read() 메소드는 null을 반환
-
+                    Log.d(TAG, "받은메세지"+ line);
                         if(line.contains("delete")){
                         mMainHandler.sendEmptyMessage(MSG_READY);
                     }else if (line == null){

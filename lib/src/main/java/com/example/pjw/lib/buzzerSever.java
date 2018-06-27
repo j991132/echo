@@ -220,7 +220,7 @@ public class buzzerSever {
 //부저버튼 눌렀을 때 브로드캐스트 해주는 쓰레드 생성
 
 class BroadcastThread extends Thread{
-    private static PrintWriter pw2;
+    private PrintWriter pw2;
     private Socket sc;
     private BufferedReader br2;
 
@@ -241,20 +241,20 @@ class BroadcastThread extends Thread{
 
     public void send() {
 
-        BroadcastThread.pw2.println("delete");
-        //BroadcastThread.pw2.flush();
-        System.out.println("Send OK");
+        pw2.println("delete");
+        pw2.flush();
+        System.out.println("Send OK"+pw2);
     }
 }
 
 //ServerThread 클래스는 쓰레드 클래스를 상속받아 별도의 클래스로 생성
 
 class ServerThread extends Thread{
-    public static BufferedReader br;
+    public  BufferedReader br;
     private Boolean loop;
-    public  static ServerSocket server;
+    public  ServerSocket server;
     private final ExecutorService pool;
-    public  static PrintWriter pw;
+    public   PrintWriter pw;
     //List 는 핸들러로 실시간 클라이언트와 연결상태 관리
     //리스트 요소는 개별 스레드로부터 언제든 삭제 추가가 가능하므로 Lock 기능이 필요
     private final List<Handler> threadList;
@@ -421,7 +421,7 @@ class  Handler implements Runnable{
 
                         if(line.contains("button")) {
 
-
+                            System.out.println("buzzer push"+line);
                             firstlist.add(line);
 
                             if(line == firstlist.get(0)) {
@@ -436,7 +436,7 @@ class  Handler implements Runnable{
 
                                 list.addElement(line.replace("connect",""));
                                 screen.t2.setText("");
-                                screen.t2.append(list + "\n");
+                                screen.t2.append(String.valueOf(list));
                                 screen.pb.add(screen.t2);
                                 System.out.println("list = "+list);
                             }
@@ -451,7 +451,7 @@ class  Handler implements Runnable{
                                 list.removeElement(line.replace("finish",""));
 
                                 screen.t2.setText("");
-                                screen.t2.append(list + "\n");
+                                screen.t2.append(String.valueOf(list));
                                 screen.pb.add(screen.t2);
 
 
