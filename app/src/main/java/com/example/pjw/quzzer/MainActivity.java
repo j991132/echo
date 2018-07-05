@@ -54,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
     //화면의 버튼과 텍스트 변수 선언
     private Button connect;
     private Button finish;
-    private Button start;
+//    private Button start;
     private TextView text;
 
     private String ip;
@@ -120,12 +120,12 @@ public class MainActivity extends AppCompatActivity {
         Main_Activity = MainActivity.this;
         connect = (Button)findViewById(R.id.button1);
         finish =  (Button)findViewById(R.id.button2);
-        start = (Button)findViewById(R.id.button3);
+//        start = (Button)findViewById(R.id.button3);
         text = (TextView)findViewById(R.id.textView1);
         context = this;
         connect.setEnabled(true);
         finish.setEnabled(false);
-        start.setEnabled(false);
+//        start.setEnabled(false);
 
         //핸들러스레드 생성하고 실행
         thread = new HandlerThread("HandlerThread");
@@ -149,7 +149,7 @@ public class MainActivity extends AppCompatActivity {
                         //종료와 전달버튼 활서화 & 연결버튼 비활성화-연결버튼 누를때 마다 스레드 계속 생성되기 방지
                         connect.setEnabled(false);
                         finish.setEnabled(true);
-                        start.setEnabled(true);
+//                        start.setEnabled(true);
                         text.setText(m);
 
                         //다이얼로그 생성
@@ -206,7 +206,7 @@ public class MainActivity extends AppCompatActivity {
                         text.setText((String) msg.obj);
                         connect.setEnabled(true);
                         finish.setEnabled(false);
-                        start.setEnabled(false);
+  //                      start.setEnabled(false);
                         m="클라이언트가 접속을 종료하였습니다.";
 
 
@@ -217,7 +217,7 @@ public class MainActivity extends AppCompatActivity {
                         text.setText((String) msg.obj);
                         connect.setEnabled(true);
                         finish.setEnabled(false);
-                        start.setEnabled(false);
+ //                       start.setEnabled(false);
                         m="서버가 접속을 종료하였습니다.";
 
                         //서브액티비티를 지칭하는 객체생성후 종료
