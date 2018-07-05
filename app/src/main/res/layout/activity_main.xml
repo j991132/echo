@@ -87,11 +87,6 @@
             android:text="종료"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
-        <Button
-            android:layout_weight="1"
-            android:id="@+id/button3"
-            android:text="전달"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+
     </LinearLayout>
 </LinearLayout>

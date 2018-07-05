@@ -153,17 +153,21 @@ class screen extends JFrame{
       //  pa.add(t1);
 
         pb.setBorder(BorderFactory.createTitledBorder("참가자"));
-        t2 = new JTextArea(40,70);
-        t2.setFont(new Font("굴림체",Font.BOLD,30));
+        t2 = new JTextArea(5,20);
+        t2.setFont(new Font("굴림체",Font.BOLD,100));
+        t2.setForeground(new Color(103,153,255));
+        t2.setBackground(new Color(255,224,140));
 
 //        t2.append(line);
         pb.add(t2);
 
         pc.setBorder(BorderFactory.createTitledBorder("IP주소 입력"));
         JTextPane t3 = new JTextPane();
+        t3.setBackground(new Color(171,242,0));
+        t3.setForeground(new Color(0,0,0));
         StyledDocument doc = (StyledDocument) t3.getDocument();
         Style style = doc.addStyle("StyleName", null);
-        StyleConstants.setFontSize(style, 100);
+        StyleConstants.setFontSize(style, 150);
         try {
             InetAddress local = InetAddress.getLocalHost();
             doc.insertString(doc.getLength(), "IP주소 :  "+local.getHostAddress(), style);

@@ -298,7 +298,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        //데이터를 서버에 전송
+ /*       //데이터를 서버에 전송
 
         start.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -314,6 +314,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+*/
 
 
 
