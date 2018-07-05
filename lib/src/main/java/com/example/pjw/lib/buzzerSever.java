@@ -114,12 +114,13 @@ class screen extends JFrame{
         dialog.setVisible(true);
 
         try {
-            Thread.sleep(3000);
+            Thread.sleep(5000);
             dialog.setVisible(false);
             ServerThread.firstlist.clear();
            // ServerThread.pw.println("delete");
             ServerThread.broadcast();
-           // ServerThread.pw.flush();
+
+
         }catch (InterruptedException e ){}
 /*
         timer = new Timer();
@@ -231,10 +232,10 @@ class BroadcastThread extends Thread{
             this.sc = sc;
 
             //this.br2 = ServerThread.br;
-           // this.pw2 = ServerThread.pw;
-            InputStream ins = sc.getInputStream();
+            //this.pw2 = ServerThread.pw;
+         //   InputStream ins = sc.getInputStream();
             OutputStream os = sc.getOutputStream();
-            br2 = new BufferedReader(new InputStreamReader(ins));
+          //  br2 = new BufferedReader(new InputStreamReader(ins));
             pw2 = new PrintWriter(new OutputStreamWriter(os),true);
           //  pw2.println("delete");
     }
@@ -242,19 +243,20 @@ class BroadcastThread extends Thread{
     public void send() {
 
         pw2.println("delete");
-        pw2.flush();
+       // pw2.flush();
         System.out.println("Send OK"+pw2);
+
     }
 }
 
 //ServerThread 클래스는 쓰레드 클래스를 상속받아 별도의 클래스로 생성
 
 class ServerThread extends Thread{
-    public  BufferedReader br;
+    //public  BufferedReader br;
     private Boolean loop;
     public  ServerSocket server;
     private final ExecutorService pool;
-    public   PrintWriter pw;
+    public static PrintWriter pw;
     //List 는 핸들러로 실시간 클라이언트와 연결상태 관리
     //리스트 요소는 개별 스레드로부터 언제든 삭제 추가가 가능하므로 Lock 기능이 필요
     private final List<Handler> threadList;
@@ -272,6 +274,7 @@ class ServerThread extends Thread{
            st.send();
 
        }//for
+
    }//broadcast
 
 
@@ -310,11 +313,11 @@ class ServerThread extends Thread{
         while (loop){
             try{
                 //타임아웃이 발생하면 InterruptedIOException 예외가 발생
-                sc=server.accept(); //사용자마다 소켓을 배정
-                BroadcastThread st = new BroadcastThread(sc);
-                v.add(st);
-                st.start();
-                Handler h = new Handler(sc);
+                //sc=server.accept();
+              //  BroadcastThread st = new BroadcastThread(sc);
+               // v.add(st);
+              //  st.start();
+                Handler h = new Handler(server.accept());
 
 
                 lock.lock(); //요소 추가를 위해 잠금을 설정
@@ -334,6 +337,7 @@ class ServerThread extends Thread{
 
         //서버소켓을 닫는다.
         try{
+            System.out.println("서버소켓 닫힘");
             server.close();
         }catch (IOException e){
             e.printStackTrace();
@@ -386,6 +390,8 @@ class  Handler implements Runnable{
 
         }
 
+
+
         public void quit() {
             if(sock != null){
                 try{
@@ -411,34 +417,46 @@ class  Handler implements Runnable{
 
                 //윈도우에서 인코딩은 MS949를 사용한다
 
-                br = new BufferedReader(new InputStreamReader(in, "UTF-8"));
+                BufferedReader br = new BufferedReader(new InputStreamReader(in, "UTF-8"));
                 String line = null;
-                int sNum = 0;
+
                 try{
 
                     //클라이언트로부터 메시지가 올 때까지 대기한다.
                     while ((line = br.readLine()) != null){
-
+                        System.out.println("buzzer push"+line);
                         if(line.contains("button")) {
 
-                            System.out.println("buzzer push"+line);
+                            BroadcastThread st = new BroadcastThread(sock);
+                            v.add(st);
+                            st.start();
+
+                            System.out.println("button-buzzer push"+line);
                             firstlist.add(line);
 
                             if(line == firstlist.get(0)) {
                             screen.bsound();
+                            System.out.println("firstlist  "+firstlist);
                             screen.dialogTimer(firstlist.get(0).replace("button", ""));
-                                firstlist.clear();
+
+                             //   firstlist.clear();
+                            System.out.println("firstlist  "+firstlist);
+                                v.clear();
                             //screen.firstpush.getToolkit().beep();
 
-                              }
+                             }
                         }
                         else if(line.contains("connect")){
+
+
 
                                 list.addElement(line.replace("connect",""));
                                 screen.t2.setText("");
                                 screen.t2.append(String.valueOf(list));
                                 screen.pb.add(screen.t2);
                                 System.out.println("list = "+list);
+
+
                             }
 
                             //screen.dialogTimer(line.replace("!!",""));
@@ -481,7 +499,7 @@ class  Handler implements Runnable{
 
                         //클라이언트로부터 'quit'메세지가 온다면 작업을 종료시킨다.
                         //소켓을 닫는다면 readLine() 메소드에서 IOException 예외가 발생한다.
-                        if (line.equalsIgnoreCase("quit")) quit();
+                        //if (line.equalsIgnoreCase("quit")) quit();
 
                        // pw.println(line);
                        // pw.flush();
@@ -501,9 +519,9 @@ class  Handler implements Runnable{
                     if(br !=null) br.close();
                     if(sock !=null){
 
-                        v.clear();
+
                         sock.close();
-                    }
+                   }
                 }
             }catch (Exception ex){
                 System.out.println(ex);
