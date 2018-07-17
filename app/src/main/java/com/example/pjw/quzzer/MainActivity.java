@@ -2,14 +2,17 @@ package com.example.pjw.quzzer;
 
 import android.app.Activity;
 import android.app.Dialog;
+import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Point;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
 import android.os.SystemClock;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -71,23 +74,14 @@ public class MainActivity extends AppCompatActivity {
     public static final int MSG_READY=6;
     public static final int MSG_ERROR=999;
 
-    @Override
-    public void onStop(){
 
-        super.onStop();
-    }
 
 
 
     @Override
     public void onDestroy(){
-        Message msg = mServiceHandler.obtainMessage();
-        msg.what = MSG_START;
-        String finishname = name + "finish";
-        msg.obj = finishname;
 
-        //핸들러스레드를 통해 문자를 서버에 전달
-        mServiceHandler.sendMessage(msg);
+
         if (client !=null){
 
 
@@ -95,18 +89,18 @@ public class MainActivity extends AppCompatActivity {
             mServiceHandler.sendEmptyMessage(MSG_CLIENT_STOP);
 
         }
+        SystemClock.sleep(2000); //작업이 완료될 때까지 2초 작업 대기
 
-        SystemClock.sleep(2000); //작업이 완료될 때까지 0.1초 작업 대기
 
-
+        Log.d(TAG, "백버튼!!!!!");
         //화면을 닫으면 소케과 스레드 모두 종료
         super.onDestroy();
         //소켓 객체를 닫는 close() 메소드는 일반 스레드로 실행해야함-메인스레드에서 실행시 오류-4웨이 핸드쉐이크 때문
         //따라서 핸들러 호출
-//        if (client != null){
+        if (client != null){
 
-//            mServiceHandler.sendEmptyMessage(MSG_STOP);
-  //      }
+            mServiceHandler.sendEmptyMessage(MSG_STOP);
+       }
         //핸들러스레드 종료
         thread.quit();
         SystemClock.sleep(100); //작업이 완료될 때까지 0.1초 작업 대기
@@ -354,6 +348,25 @@ public class MainActivity extends AppCompatActivity {
                 case MSG_STOP:
                 case MSG_CLIENT_STOP:
                 case MSG_SERVER_STOP:
+
+                    Log.d(TAG, "스톱시작");
+             //       Message msg = mServiceHandler.obtainMessage();
+             //     msg.what = MSG_START;
+                    String finishname = name + "finish";
+                    msg.obj = finishname;
+                    try{
+                    networkWriter.write((String) msg.obj);
+                    networkWriter.newLine();
+                    networkWriter.flush();
+                        Log.d(TAG, "메세지보냄   "+finishname);
+                        SystemClock.sleep(2000); //작업이 완료될 때까지 2초 작업 대기
+                        Log.d(TAG, "스톱끝");
+                    }catch (IOException e){
+
+                        Log.d(TAG, "에러발생",e);
+                    }
+
+
                     client.quit();
                     client = null;
                     break;
