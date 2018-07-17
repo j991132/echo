@@ -73,13 +73,6 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onStop(){
-        Message msg = mServiceHandler.obtainMessage();
-        msg.what = MSG_START;
-        String finishname = name + "finish";
-        msg.obj = finishname;
-
-        //핸들러스레드를 통해 문자를 서버에 전달
-        mServiceHandler.sendMessage(msg);
 
         super.onStop();
     }
@@ -88,19 +81,32 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onDestroy(){
+        Message msg = mServiceHandler.obtainMessage();
+        msg.what = MSG_START;
+        String finishname = name + "finish";
+        msg.obj = finishname;
 
+        //핸들러스레드를 통해 문자를 서버에 전달
+        mServiceHandler.sendMessage(msg);
+        if (client !=null){
+
+
+            //핸들러스레드를 사용하여 스레드 종료
+            mServiceHandler.sendEmptyMessage(MSG_CLIENT_STOP);
+
+        }
+
+        SystemClock.sleep(2000); //작업이 완료될 때까지 0.1초 작업 대기
 
 
         //화면을 닫으면 소케과 스레드 모두 종료
         super.onDestroy();
         //소켓 객체를 닫는 close() 메소드는 일반 스레드로 실행해야함-메인스레드에서 실행시 오류-4웨이 핸드쉐이크 때문
         //따라서 핸들러 호출
-        if (client != null){
+//        if (client != null){
 
-
-
-            mServiceHandler.sendEmptyMessage(MSG_STOP);
-        }
+//            mServiceHandler.sendEmptyMessage(MSG_STOP);
+  //      }
         //핸들러스레드 종료
         thread.quit();
         SystemClock.sleep(100); //작업이 완료될 때까지 0.1초 작업 대기
@@ -274,7 +280,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-
+//종료버튼 누를때
         finish.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View V){
@@ -423,10 +429,11 @@ public class MainActivity extends AppCompatActivity {
 
                     //서버로부터 FIN 패킷을 수신하면 read() 메소드는 null을 반환
                     Log.d(TAG, "받은메세지"+ line);
-                        if(line.contains("delete")){
-                        mMainHandler.sendEmptyMessage(MSG_READY);
-                    }else if (line == null){
+                        if (line == null){
                             break;}
+                            else  if(line.contains("delete")){
+                            mMainHandler.sendEmptyMessage(MSG_READY);
+                        }
 
                     //읽어들인 문자열은 화면 출력을 위해 Runnable 객체와 핸들러를 사용하였다.
                     //메시지를 사용하지 않은 이유는 단지 이렇게 하더라도 작동하는지 보여주기 위함

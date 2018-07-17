@@ -260,7 +260,7 @@ class ServerThread extends Thread{
     private Boolean loop;
     public  ServerSocket server;
     private final ExecutorService pool;
-    public static PrintWriter pw;
+//    public static PrintWriter pw;
     //List 는 핸들러로 실시간 클라이언트와 연결상태 관리
     //리스트 요소는 개별 스레드로부터 언제든 삭제 추가가 가능하므로 Lock 기능이 필요
     private final List<Handler> threadList;
@@ -417,7 +417,7 @@ class  Handler implements Runnable{
 
                 OutputStream out = sock.getOutputStream();
                 InputStream in = sock.getInputStream();
-                pw = new PrintWriter(new OutputStreamWriter(out));
+                PrintWriter pw = new PrintWriter(new OutputStreamWriter(out));
 
                 //윈도우에서 인코딩은 MS949를 사용한다
 
